@@ -157,9 +157,13 @@ at your option.
 Supported Python versions
 -------------------------
 
-The package requires Python 3.8 or newer. The CI matrix covers Python 3.8 through
+The package requires Python 3.11 or newer. The CI matrix covers Python 3.11 through
 3.15; see `tox.ini <https://github.com/andife/diff-pdf-visually/blob/main/tox.ini>`_
 and the `workflow <https://github.com/andife/diff-pdf-visually/blob/main/.github/workflows/run-tox.yml>`_.
 
 Future Python versions are allowed by the package metadata but are not yet part
 of the CI matrix.
+
+Python versions that have reached end of life are not supported. Python 3.8,
+3.9 and 3.10 are excluded from package installation and CI; see the
+`Python version status <https://devguide.python.org/versions/>`_.
