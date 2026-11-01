@@ -16,6 +16,7 @@ from .constants import VERB_PERPAGE, VERB_PRINT_CMD, VERB_ROUGH_PROGRESS
 
 from . import external_programs
 from .external_programs import verbose_run
+from .report import write_report
 
 
 def pdftopng(sourcepath, destdir, basename, verbosity, dpi):
@@ -140,8 +141,9 @@ def pdfdiff_pages(
         remove the directory.
     """
 
-    assert os.path.isfile(a), "file {} must exist".format(a)
-    assert os.path.isfile(b), "file {} must exist".format(b)
+    for source in (a, b):
+        if not os.path.isfile(source):
+            raise FileNotFoundError("file {} must exist".format(source))
 
     if threshold is None:
         threshold = constants.DEFAULT_THRESHOLD
@@ -157,11 +159,9 @@ def pdfdiff_pages(
     if tempdir == None:
         path_context = tempfile.TemporaryDirectory(prefix="diffpdf-")
     else:
-        assert isinstance(tempdir, pathlib.Path)
-        assert tempdir.is_dir(), \
-            f"Temporary directory {tempdir} should be an existing directory"
-        assert list(tempdir.glob('*')) == [], \
-            f"temporary directory {tempdir} should be empty at the start"
+        tempdir = pathlib.Path(tempdir)
+        if not tempdir.is_dir() or any(tempdir.iterdir()):
+            raise ValueError("Output directory must be an existing empty directory: {}".format(tempdir))
         path_context = nullcontext(tempdir)
 
     with path_context as p:
@@ -189,6 +189,8 @@ def pdfdiff_pages(
             ), "mishap with weird page numbers: {} vs {}".format(a_i, b_i)
             if verbosity >= VERB_PRINT_REASON:
                 print("Different number of pages: {} vs {}".format(len(a_i), len(b_i)))
+            if tempdir is not None:
+                write_report(p, a, b, a_i, b_i, {}, threshold)
             return [-1]
         assert len(a_i) > 0
 
@@ -214,7 +216,9 @@ def pdfdiff_pages(
             significances.append(s)
 
         min_significance = min(significances, default=INFINITY)
-        significant = min_significance <= threshold
+        if tempdir is not None:
+            write_report(p, a, b, a_i, b_i, dict(zip(a_i, significances)), threshold)
+        significant = min_significance < threshold
 
         largest_significances = sorted(
             (sgf, pageno_minus_one + 1)

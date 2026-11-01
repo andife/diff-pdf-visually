@@ -1,6 +1,6 @@
 # Find the right command to use for a program.
 
-import os, sys, subprocess
+import os, shlex, sys, subprocess
 from subprocess import DEVNULL
 from typing import List
 
@@ -27,7 +27,15 @@ def compare_cmd(print_cmds: bool) -> List[str]:
         # Does it work?
         if attempt == None:
             continue
-        attempt_cmd = attempt.split(" ")
+        if os.path.isfile(attempt):
+            attempt_cmd = [attempt]
+        else:
+            # Windows paths retain backslashes; quoted executable paths may
+            # also be followed by arguments, e.g. '"C:\\Program Files\\magick.exe" compare'.
+            attempt_cmd = shlex.split(attempt, posix=(os.name != "nt"))
+            if os.name == "nt":
+                attempt_cmd = [part[1:-1] if part.startswith('"') and part.endswith('"') else part
+                               for part in attempt_cmd]
         try:
             processresult = verbose_run(
                 print_cmds, attempt_cmd + ["-version"], stdout=DEVNULL, stderr=DEVNULL
@@ -41,7 +49,7 @@ def compare_cmd(print_cmds: bool) -> List[str]:
 
     if result_cmd == None:
         cur_val = repr(env_compare) if env_compare != None else "unset"
-        raise Exception(
+        raise RuntimeError(
             " ".join(
                 line.strip()
                 for line in """ 
