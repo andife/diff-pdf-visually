@@ -5,12 +5,14 @@ readme = "README.rst"
 authors = [{name = "Bram Geron", email = "bram@bram.xyz"}]
 maintainers = [{name = "Bram Geron", email = "bram@bram.xyz"}]
 license = "MIT OR Apache-2.0"
+license-files = ["LICENSE-APACHE", "LICENSE-MIT"]
+keywords = ["pdf", "diff", "visual-comparison", "imagemagick", "poppler"]
 classifiers = [
     'Intended Audience :: Developers',
-    'License :: OSI Approved :: MIT License',
-    'License :: OSI Approved :: Apache Software License',
     'Natural Language :: English',
     'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3 :: Only',
 ]
 dependencies = []
 requires-python = ">=3.8"
@@ -23,21 +25,17 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/bgeron/diff-pdf-visually"
-Source = "https://github.com/bgeron/diff-pdf-visually"
+Homepage = "https://github.com/andife/diff-pdf-visually"
+Source = "https://github.com/andife/diff-pdf-visually"
+Issues = "https://github.com/andife/diff-pdf-visually/issues"
+Upstream = "https://github.com/bgeron/diff-pdf-visually"
 
 [project.scripts]
 diff-pdf-visually = "diff_pdf_visually.__main__:main"
 
-[requires]
-python_version = ['3.9', '3.10', '3.11', '3.12', '3.13']
-
 [build-system]
-requires = ['hatchling>=1.26.1']
+requires = ['hatchling>=1.27.0']
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
 path = 'diff_pdf_visually/__init__.py'
-
-[tool.hatch.commands]
-prerelease = 'hatch build'
