@@ -157,6 +157,9 @@ at your option.
 Supported Python versions
 -------------------------
 
-The versions that are regularly tested can be found `here <https://github.com/bgeron/diff-pdf-visually/blob/main/tox.ini>`_, that's probably Python 3.8 and Python 3.9.
+The package requires Python 3.8 or newer. The CI matrix covers Python 3.8 through
+3.15; see `tox.ini <https://github.com/andife/diff-pdf-visually/blob/main/tox.ini>`_
+and the `workflow <https://github.com/andife/diff-pdf-visually/blob/main/.github/workflows/run-tox.yml>`_.
 
-For your convenience we declare more Python versions acceptable in ``pyproject.toml``, but the non-tested versions could potentially break from time to time. My goal is to support basically Python 3.x; please let me know if something doesn't work on an older version.
+Future Python versions are allowed by the package metadata but are not yet part
+of the CI matrix.
