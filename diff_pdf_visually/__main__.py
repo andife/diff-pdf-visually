@@ -1,4 +1,4 @@
-import argparse, sys
+import argparse, math, subprocess, sys
 from pathlib import Path
 from . import pdf_similar
 
@@ -14,15 +14,6 @@ def main():
     """.strip()
 
     parser = argparse.ArgumentParser(description=description)
-
-    verbosity = DEFAULT_VERBOSITY
-
-    def more_silent():
-        assert verbosity <= DEFAULT_VERBOSITY, "cannot be both silent and verbose"
-        verbosity -= 1
-    def more_verbose():
-        assert verbosity >= DEFAULT_VERBOSITY, "cannot be both silent and verbose"
-        verbosity += 1
 
     parser.add_argument('a', metavar='a.pdf')
     parser.add_argument('b', metavar='b.pdf')
@@ -61,8 +52,21 @@ def main():
 
     args = parser.parse_args()
 
-    assert args.silent == 0 or args.verbose == 0, "cannot be silent and verbose"
-    assert 1 <= args.dpi
+    if args.silent and args.verbose:
+        parser.error("cannot be silent and verbose")
+    if args.silent > 1 or args.verbose > MAX_VERBOSITY - DEFAULT_VERBOSITY:
+        parser.error("use -q at most once or -v at most twice")
+    if args.dpi < 1:
+        parser.error("--dpi must be at least 1")
+    if args.time < 0:
+        parser.error("--time must be nonnegative")
+    if not math.isfinite(args.threshold):
+        parser.error("--threshold must be finite")
+    for filename in (args.a, args.b):
+        if not Path(filename).is_file():
+            parser.error("input file does not exist: " + filename)
+    if args.outdir and (not args.outdir.is_dir() or any(args.outdir.iterdir())):
+        parser.error("--outdir must be an existing empty directory")
 
     verbosity = DEFAULT_VERBOSITY + args.verbose - args.silent
 
@@ -73,14 +77,18 @@ def main():
             print("Warning: {!r} does not end in .pdf.".format(args.b))
 
     if args.outdir and args.time:
-        raise ValueError("--time is only for keeping files in a temporary directory. If you specify --outdir, you cannot specify --time")
+        parser.error("--time cannot be combined with --outdir")
 
-    if pdf_similar(args.a, args.b,
+    try:
+        similar = pdf_similar(args.a, args.b,
             verbosity=verbosity,
             threshold=args.threshold,
             dpi=args.dpi,
             tempdir=args.outdir,
-            time_to_inspect=args.time):
+            time_to_inspect=args.time)
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+        parser.exit(1, "error: {}\n".format(error))
+    if similar:
         sys.exit(0)
     else:
         sys.exit(2)

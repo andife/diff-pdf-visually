@@ -140,6 +140,20 @@ So what do you use this for?
 
 Personally, I've used this a couple of times to refactor my LaTeX documents: I just simplify or remove some macro definitions, and if nothing changes, apparently it's safe to make that change.
 
+HTML reports
+============
+
+Create an empty directory, then retain the images and a local report with::
+
+    diff-pdf-visually --outdir comparison a.pdf b.pdf
+
+Open ``comparison/index.html`` to browse before, after and difference images.
+The Python API also writes this report when ``tempdir`` is supplied.
+Pages are matched by position, not by content. With unequal page counts,
+shared positions are marked as not compared and the API still returns ``[-1]``.
+Pages exactly at the threshold are considered similar, consistently with the
+returned list of differences.
+
 Status
 ======
 
