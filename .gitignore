@@ -12,6 +12,7 @@ __pycache__
 /build
 /diff_pdf_visually.egg-info
 /dist
+/reports
 /docs/build
 /venv
 /wheelhouse
