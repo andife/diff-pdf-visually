@@ -97,6 +97,11 @@ We use ``pdftocairo`` to convert both PDFs to a series of PNG images in a tempor
 
 **You must have ImageMagick and poppler already installed**.
 
+Similarity thresholds use PSNR in decibels (dB). We calculate this from
+ImageMagick's normalized mean squared error (MSE), so thresholds keep the
+same meaning across ImageMagick versions, including versions that normalize
+their PSNR output. Identical images have infinite PSNR.
+
 Call ``diff-pdf-visually`` without parameters (or run ``python3 -m diff_pdf_visually``) to see its command line arguments. Import it as ``diff_pdf_visually`` to use its functions from Python.
 
 There are some options that you can use either from the command line or from Python::

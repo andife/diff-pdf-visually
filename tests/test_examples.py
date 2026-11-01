@@ -3,6 +3,7 @@ from tempfile import TemporaryDirectory
 from pathlib import Path
 
 def test_examples():
+    assert pdf_similar("tests/base.pdf", "tests/base.pdf", verbosity=0)
     ## Per page
     assert [1] == pdfdiff_pages("tests/base.pdf", "tests/base_shifted_layout.pdf",
         verbosity=0)

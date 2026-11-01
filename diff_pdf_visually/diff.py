@@ -7,7 +7,7 @@ and pdftocairo.
 
 INFINITY = float("inf")
 
-import os.path, pathlib, subprocess, sys, tempfile, time
+import math, os.path, pathlib, re, subprocess, sys, tempfile, time
 from concurrent.futures import ThreadPoolExecutor
 from . import constants
 from .polyfill import nullcontext
@@ -58,7 +58,7 @@ def imgdiff(a, b, diff, log, print_cmds):
         cmdresult = verbose_run(
             print_cmds,
             external_programs.compare_cmd(print_cmds)
-            + ["-verbose", "-metric", "PSNR", str(a), str(b), str(diff),],
+            + ["-verbose", "-metric", "MSE", str(a), str(b), str(diff),],
             stdout=f,
             stderr=subprocess.STDOUT,
         )
@@ -75,9 +75,17 @@ def imgdiff(a, b, diff, log, print_cmds):
     PREF = "    all: "
     all_line = [l for l in lines if l.startswith(PREF)]
     assert len(all_line) == 1
+    # ImageMagick 7.1.1-45 and newer normalize PSNR instead of reporting dB.
+    # Derive PSNR from normalized MSE to keep thresholds independent of the
+    # ImageMagick version and quantum depth. MSE output is "raw (normalized)".
     all_str = all_line[0][len(PREF) :].strip()
-    all_num = INFINITY if (all_str == "0" or all_str == "1.#INF") else float(all_str)
-    return all_num
+    match = re.fullmatch(r"\S+\s+\(([^()]+)\)", all_str)
+    if match is None:
+        raise ValueError("Cannot parse ImageMagick normalized MSE: " + all_str)
+    mse = float(match.group(1))
+    if not math.isfinite(mse) or mse < 0:
+        raise ValueError("Invalid ImageMagick normalized MSE: " + all_str)
+    return INFINITY if mse == 0 else -10 * math.log10(mse)
 
 
 
